@@ -4,72 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruffle Player</title>
-    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: #000;
+            background-color: #1a202c;
+            user-select: none;
         }
         #gameContainer {
             width: 80%;
             height: 80vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #333;
+            background-color: #2d3748;
         }
         #fileInputContainer {
-            margin-top: 20px;
+            display: flex;
+            justify-content: center;
         }
         #fileInput {
-            font-size: 18px;
-            padding: 10px;
-            color: #fff;
-            background-color: #444;
-            border: none;
-            cursor: pointer;
+            @apply text-sm bg-gray-800 text-white py-2 px-4 rounded-lg cursor-pointer;
+            width: 87%;
+        }
+        .dimensionInput {
+            @apply w-20 py-2 px-4 text-sm bg-gray-800 text-white rounded-lg text-center;
         }
         ruffle-player {
             width: 100%;
             height: 100%;
         }
-        #inputContainer {
-            margin-top: 20px;
-            color: #fff;
-        }
-        .dimensionInput {
-            width: 50px;
-            padding: 8px;
-            font-size: 18px;
-            color: #fff;
-            background-color: #444;
-            border: none;
-            text-align: center;
-        }
-        #inputContainer label {
-            margin-right: 10px;
-            font-size: 18px;
-        }
     </style>
 </head>
-<body>
-    <div id="gameContainer"></div>
-    <div id="fileInputContainer">
-        <input type="file" id="fileInput" accept=".swf">
+<body class="flex flex-col items-center justify-center h-screen">
+    <div id="gameContainer" class="bg-gray-700 rounded-lg shadow-lg">
     </div>
-    <div id="inputContainer">
-        <input type="number" id="widthInput" class="dimensionInput" min="10" max="100" value="80">
-        X
-        <input type="number" id="heightInput" class="dimensionInput" min="10" max="100" value="80">
+    <div id="fileInputContainer" class="mt-4">
+        <input type="file" id="fileInput" accept=".swf" class="text-sm bg-gray-800 text-white py-2 px-4 rounded-lg cursor-pointer">
+    </div>
+    <div class="flex items-center mt-4">
+        <input type="number" id="widthInput" class="w-20 py-2 px-4 text-sm bg-gray-800 text-white rounded-lg text-center mr-2" min="10" max="100" value="80">
+        <span class="text-gray-300">X</span>
+        <input type="number" id="heightInput" class="w-20 py-2 px-4 text-sm bg-gray-800 text-white rounded-lg text-center ml-2" min="10" max="100" value="80">
     </div>
 
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
     <script>
         document.getElementById('fileInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -77,13 +54,13 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const gameContainer = document.getElementById('gameContainer');
-
                     const ruffle = window.RufflePlayer.newest();
                     const player = ruffle.createPlayer();
                     gameContainer.innerHTML = '';
                     gameContainer.appendChild(player);
-
                     player.load({ data: e.target.result });
+                    resizeRufflePlayer(player);
+                    window.addEventListener('resize', () => resizeRufflePlayer(player));
                 };
                 reader.readAsArrayBuffer(file);
             }
@@ -92,17 +69,26 @@
         const widthInput = document.getElementById('widthInput');
         const heightInput = document.getElementById('heightInput');
 
-        widthInput.addEventListener('input', function() {
+        widthInput.addEventListener('input', () => {
             const width = widthInput.value + '%';
             const gameContainer = document.getElementById('gameContainer');
             gameContainer.style.width = width;
+            resizeRufflePlayer(gameContainer.querySelector('ruffle-player'));
         });
 
-        heightInput.addEventListener('input', function() {
+        heightInput.addEventListener('input', () => {
             const height = heightInput.value + 'vh';
             const gameContainer = document.getElementById('gameContainer');
             gameContainer.style.height = height;
+            resizeRufflePlayer(gameContainer.querySelector('ruffle-player'));
         });
+
+        function resizeRufflePlayer(player) {
+            const gameContainer = document.getElementById('gameContainer');
+            const rect = gameContainer.getBoundingClientRect();
+            player.style.width = rect.width + 'px';
+            player.style.height = rect.height + 'px';
+        }
     </script>
 </body>
 </html>
